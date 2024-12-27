@@ -54,38 +54,43 @@ void carvePath(t_lab& lab, t_path* path, int x, int y) {
 	lab.cases[x][y].visited = true;
 	int sizeX = lab.cases.size();
 	int sizeY = lab.cases[x].size();
-	draw_matrix(lab);
-	print_path(*path);
+	//draw_matrix(lab);
+	//print_path(*path);
 
 	while(fails < 5) {
 		int rand_direction = rand() % 4;
 		
 
 		//North
-		if (rand_direction == 0 && ((y + 1) < sizeY) && lab.cases[x][(y + 1)].visited ==false) {
+		if (rand_direction == 0 && ((y + 1) < sizeY) && lab.cases[x][(y + 1)].visited ==false && 
+			lab.cases[x][(y + 1)].isEntrance ==false){
+
 			lab.cases[x][y].open_top = true;
-			printf("reached NORTH\n");
+			//printf("reached NORTH\n");
 			carvePath(lab, path, x, y + 1);
 			return;
 		}
 		//East
-		else if (rand_direction == 1 && ((x + 1) < sizeX) && lab.cases[(x + 1)][y].visited ==false) {
+		else if (rand_direction == 1 && ((x + 1) < sizeX) && lab.cases[(x + 1)][y].visited ==false && 
+			lab.cases[(x + 1)][y].isEntrance == false) {
 			lab.cases[x][y].open_right = true;
-			printf("reached EAST\n");
+			//printf("reached EAST\n");
 			carvePath(lab, path, (x+1) , y);
 			return;
 		}
 		//South
-		else if (rand_direction == 2 && (y - 1 >= 0) && lab.cases[x][(y - 1)].visited == false) {
+		else if (rand_direction == 2 && (y - 1 >= 0) && lab.cases[x][(y - 1)].visited == false && 
+			lab.cases[x][(y - 1)].isEntrance == false) {
 			lab.cases[x][y].open_bot = true;
-			printf("reached SOUTH\n");
+			//printf("reached SOUTH\n");
 			carvePath(lab, path, x, (y-1));
 			return;
 		}
 		//West
-		else if (rand_direction == 3 && (x - 1 >= 0) && lab.cases[(x - 1)][y].visited == false) {
+		else if (rand_direction == 3 && (x - 1 >= 0) && lab.cases[(x - 1)][y].visited == false && 
+			lab.cases[(x - 1)][y].isEntrance == false) {
 			lab.cases[x][y].open_left = true;
-			printf("reached WEST\n");
+			//printf("reached WEST\n");
 			carvePath(lab, path, (x - 1), y);
 			return;
 		}
@@ -102,6 +107,7 @@ void draw_labyrinth(t_lab& lab, RenderWindow& window) {
 
 	float pos_left = (800 / 2) - (MAX_X * CELL) / 2;
 	float pos_bot = (600 / 2) - (MAX_Y * CELL) / 2;
+	
 	sf::RectangleShape caserect({ CELL - 2, CELL - 2 });
 	caserect.setFillColor(sf::Color::Black);
 	for (int x = 0; x < x_cases; x++) {
@@ -156,7 +162,11 @@ void draw_labyrinth(t_lab& lab, RenderWindow& window) {
 	}
 }
 
-	void generate_labyrinth(RenderWindow& window) {
+void draw_room(RenderWindow& window, t_lab& lab) {
+	
+}
+
+void generate_labyrinth(RenderWindow& window) {
 	srand(static_cast<unsigned int>(time(0)));
 	t_lab lab;
 
@@ -180,7 +190,7 @@ void draw_labyrinth(t_lab& lab, RenderWindow& window) {
 	//Randomize entrances by size and factor
 	vector<t_case*> entrance;
 	entrance = generate_entrances(lab, MAX_X, MAX_Y);
-
+	lab.rooms = generate_rooms(lab,MAX_X,MAX_Y);
 	int entrance_size = entrance.size();
 
 	// Range-based for loop (modern C++)
