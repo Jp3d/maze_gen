@@ -23,7 +23,7 @@ struct t_path {
 struct t_room {
 	int length;
 	int height;
-	vector<t_case> roomCases;
+	vector<t_case*> roomCases;
 
 };
 
@@ -31,6 +31,6 @@ struct t_lab {
 	vector<vector<t_case>> cases;  // Use std::vector
 	vector<t_case*> entrances;
 	vector<t_path*> paths;
-	vector<t_room> rooms;
+	vector<t_room*> rooms;
 
 };

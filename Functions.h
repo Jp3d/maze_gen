@@ -5,4 +5,4 @@
 vector<t_case*> generate_entrances(t_lab& lab, int x, int y);
 
 //
-vector<t_case*> generate_rooms(t_lab& lab, int x, int y);
+vector<t_room*> generate_rooms(t_lab& lab, int x, int y);

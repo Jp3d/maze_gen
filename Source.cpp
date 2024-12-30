@@ -12,8 +12,8 @@ using namespace sf;
 
 constexpr int windowWidth{ 800 }, windowHeight{ 600 };
 
-#define MAX_X 16
-#define MAX_Y 12
+#define MAX_X 36
+#define MAX_Y 24
 #define CELL 18
 
 
@@ -29,15 +29,17 @@ void draw_matrix(t_lab& lab) {
 		for (int x = 0; x < lab.cases.size(); x++) {
 			std::cout << "[";
 
-			if (!lab.cases[x][y].visited) {
-				std::cout << "0";
+			if (lab.cases[x][y].isRoom) {
+				std::cout << "M";
 			}
 			else {
 				std::string cell = "";
+				//if (lab.cases[x][y].isRoom) cell += "M";
 				if (lab.cases[x][y].open_top) cell += "T";
 				if (lab.cases[x][y].open_right) cell += "R";
 				if (lab.cases[x][y].open_bot) cell += "B";
 				if (lab.cases[x][y].open_left) cell += "L";
+				if (!lab.cases[x][y].visited) cell += "V";
 				std::cout << cell;
 			}
 
@@ -57,10 +59,9 @@ void carvePath(t_lab& lab, t_path* path, int x, int y) {
 	//draw_matrix(lab);
 	//print_path(*path);
 
-	while(fails < 5) {
+	while(fails < 12) {
 		int rand_direction = rand() % 4;
 		
-
 		//North
 		if (rand_direction == 0 && ((y + 1) < sizeY) && lab.cases[x][(y + 1)].visited ==false && 
 			lab.cases[x][(y + 1)].isEntrance ==false){
@@ -163,7 +164,19 @@ void draw_labyrinth(t_lab& lab, RenderWindow& window) {
 }
 
 void draw_room(RenderWindow& window, t_lab& lab) {
+
+	float room_height = (lab.rooms[0]->height * CELL)-2; //pixel size
+	float room_lenght = (lab.rooms[0]->length * CELL)-2;
 	
+	float pos_left = (800 / 2) - (room_height/2);
+	float pos_bot = (600 / 2) - (room_lenght/2);
+
+
+	sf::RectangleShape caserect({ room_height, room_lenght });
+	caserect.setFillColor(sf::Color::Black);
+	caserect.setPosition(Vector2f(pos_left-1, pos_bot-1));
+	window.draw(caserect);
+
 }
 
 void generate_labyrinth(RenderWindow& window) {
@@ -184,25 +197,28 @@ void generate_labyrinth(RenderWindow& window) {
 			lab.cases[x][y].y = y;
 			lab.cases[x][y].x = x;
 			lab.cases[x][y].visited = false;
+			lab.cases[x][y].isEntrance = false;
+			lab.cases[x][y].isRoom = false;
 		}
 	}
 
 	//Randomize entrances by size and factor
-	vector<t_case*> entrance;
-	entrance = generate_entrances(lab, MAX_X, MAX_Y);
+	lab.entrances = generate_entrances(lab, MAX_X, MAX_Y);
 	lab.rooms = generate_rooms(lab,MAX_X,MAX_Y);
-	int entrance_size = entrance.size();
+	int entrance_size = lab.entrances.size();
 
 	// Range-based for loop (modern C++)
 	for (int i = 0; i < entrance_size; i++) {
 		t_path* new_path = new t_path();
-		carvePath(lab, new_path, entrance[i]->x, entrance[i]->y);
+		carvePath(lab, new_path, lab.entrances[i]->x, lab.entrances[i]->y);
 		lab.paths.push_back(new_path);
 	}
 	//fill empty cells
 
 	//render
 	draw_labyrinth(lab, window);
+	draw_room(window, lab);
+	draw_matrix(lab);
 }
 
 void draw_contour(RenderWindow &window) {
@@ -245,6 +261,7 @@ int main() {
 		window.clear(sf::Color::Black); // Use sf::
 		draw_contour(window);
 		generate_labyrinth(window);
+		
 		window.display(); // Now display everything that has been drawn
 		sf::Event event;
 		while (window.waitEvent(event)) {  // waitEvent instead of game loop

@@ -34,10 +34,10 @@ vector<t_case*> generate_entrances(t_lab& lab, int x, int y) {
 	return entrancelist;
 }
 
-vector<t_case*> generate_rooms(t_lab& lab, int x, int y) {
+vector<t_room*> generate_rooms(t_lab& lab, int x, int y) {
 	
-	vector<t_case*> roomList;
-	t_room room;
+	vector<t_room*> roomList;
+	t_room* room = new t_room;
 
 	int maxRoom_X = (x / 8);
 	int maxRoom_Y = (x / 8);
@@ -48,20 +48,21 @@ vector<t_case*> generate_rooms(t_lab& lab, int x, int y) {
 	maxRoom_X *= 2;
 	maxRoom_Y *= 2;
 
-	room.length = maxRoom_X;
-	room.height = maxRoom_Y;
+	room->height = maxRoom_X;
+	room->length = maxRoom_Y;
 	
 
 	int start_x = (x / 2) - (maxRoom_X / 2);
 	int start_y = (y / 2) - (maxRoom_Y / 2);
 	
-	for (int i = start_x; i < maxRoom_X; i++) {
-		for (int j = start_y; j < maxRoom_Y; j++) {
-			//add rooms
+	for (int i = start_x; i < (start_x + maxRoom_X); i++) {
+		for (int j = start_y; j < (start_y + maxRoom_Y); j++) {
+			//add rooms to room
 			lab.cases[i][j].visited = true;
 			lab.cases[i][j].isRoom = true;
-			roomList.push_back(&lab.cases[i][j]);
+			room->roomCases.push_back(&lab.cases[i][j]);
 		}
 	}
+	roomList.push_back(room);
 	return roomList;
 }
