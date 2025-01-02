@@ -16,13 +16,13 @@ constexpr int windowWidth{ 800 }, windowHeight{ 600 };
 #define MAX_Y 24
 #define CELL 18
 
-
 void print_path(t_path path) {
 	int size = path.case_ptr.size();
 	for (int i = 0; i < size; i++) {
 		printf("[%d][%d]\n", path.case_ptr[i]->x, path.case_ptr[i]->y);
 	}
 }
+
 
 void draw_matrix(t_lab& lab) {
 	for (int y = 0; y < lab.cases[0].size(); y++) {
@@ -49,58 +49,7 @@ void draw_matrix(t_lab& lab) {
 	}
 }
 
-void carvePath(t_lab& lab, t_path* path, int x, int y) {
-	int fails = 0;
-	if ((path->case_ptr.size() > 1) && lab.cases[x][y].isEntrance) return; // stop if you reach another entrance. fuck it.
-	path->case_ptr.push_back(&lab.cases[x][y]);
-	lab.cases[x][y].visited = true;
-	int sizeX = lab.cases.size();
-	int sizeY = lab.cases[x].size();
-	//draw_matrix(lab);
-	//print_path(*path);
-
-	while(fails < 12) {
-		int rand_direction = rand() % 4;
-		
-		//North
-		if (rand_direction == 0 && ((y + 1) < sizeY) && lab.cases[x][(y + 1)].visited ==false && 
-			lab.cases[x][(y + 1)].isEntrance ==false){
-
-			lab.cases[x][y].open_top = true;
-			//printf("reached NORTH\n");
-			carvePath(lab, path, x, y + 1);
-			return;
-		}
-		//East
-		else if (rand_direction == 1 && ((x + 1) < sizeX) && lab.cases[(x + 1)][y].visited ==false && 
-			lab.cases[(x + 1)][y].isEntrance == false) {
-			lab.cases[x][y].open_right = true;
-			//printf("reached EAST\n");
-			carvePath(lab, path, (x+1) , y);
-			return;
-		}
-		//South
-		else if (rand_direction == 2 && (y - 1 >= 0) && lab.cases[x][(y - 1)].visited == false && 
-			lab.cases[x][(y - 1)].isEntrance == false) {
-			lab.cases[x][y].open_bot = true;
-			//printf("reached SOUTH\n");
-			carvePath(lab, path, x, (y-1));
-			return;
-		}
-		//West
-		else if (rand_direction == 3 && (x - 1 >= 0) && lab.cases[(x - 1)][y].visited == false && 
-			lab.cases[(x - 1)][y].isEntrance == false) {
-			lab.cases[x][y].open_left = true;
-			//printf("reached WEST\n");
-			carvePath(lab, path, (x - 1), y);
-			return;
-		}
-		else { 
-			fails++; 
-		}
-	}
-}
-
+//
 void draw_labyrinth(t_lab& lab, RenderWindow& window) {
 	int x_cases = lab.cases.size();
 	int y_cases = lab.cases[0].size();
@@ -163,6 +112,7 @@ void draw_labyrinth(t_lab& lab, RenderWindow& window) {
 	}
 }
 
+//
 void draw_room(RenderWindow& window, t_lab& lab) {
 
 	float room_height = (lab.rooms[0]->height * CELL)-2; //pixel size
@@ -179,6 +129,7 @@ void draw_room(RenderWindow& window, t_lab& lab) {
 
 }
 
+//
 void generate_labyrinth(RenderWindow& window) {
 	srand(static_cast<unsigned int>(time(0)));
 	t_lab lab;
@@ -207,20 +158,24 @@ void generate_labyrinth(RenderWindow& window) {
 	lab.rooms = generate_rooms(lab,MAX_X,MAX_Y);
 	int entrance_size = lab.entrances.size();
 
-	// Range-based for loop (modern C++)
+	//initial go
 	for (int i = 0; i < entrance_size; i++) {
 		t_path* new_path = new t_path();
-		carvePath(lab, new_path, lab.entrances[i]->x, lab.entrances[i]->y);
+		int pathid = path_counter();
+		new_path->id = pathid;
+		carvePath(lab, new_path, pathid, lab.entrances[i]->x, lab.entrances[i]->y);
 		lab.paths.push_back(new_path);
 	}
-	//fill empty cells
 
-	//render
 	draw_labyrinth(lab, window);
 	draw_room(window, lab);
-	draw_matrix(lab);
+	nth_pass(lab);
+	//draw_matrix(lab);
+	//print_paths(lab);
+	
 }
 
+//
 void draw_contour(RenderWindow &window) {
 	//centering the labyrinth on screen.
 	float pos_left = (800 / 2) - (MAX_X * CELL) / 2;

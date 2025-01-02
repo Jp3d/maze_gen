@@ -18,6 +18,9 @@ struct t_case {
 
 struct t_path {
 	vector<t_case*> case_ptr;              // pointer to the maze cell this path is at
+	int id; //stores an identifier for paths.
+	int max;
+
 };
 
 struct t_room {

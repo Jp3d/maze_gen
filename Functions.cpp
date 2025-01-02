@@ -3,6 +3,127 @@
 
 using namespace std;
 
+int path_number = -1;
+
+
+
+//
+bool check_if_stuck(t_lab& lab, int x, int y) {
+
+	int sizeX = lab.cases.size();
+	int sizeY = lab.cases[x].size();
+	//North 
+	if ((y + 1) < sizeY && lab.cases[x][y + 1].visited == false) return true;
+	else if ((x + 1) < sizeX && lab.cases[x + 1][y].visited == false) return true;
+	else if ((y - 1) > 0 && lab.cases[x][y - 1].visited == false) return true;
+	else if ((x - 1) > 0 && lab.cases[x - 1][y].visited == false) return true;
+	else return false;
+}
+
+//
+void split_path_from_tip(t_lab& lab, int pathId, int max_index) {
+
+	t_case* temp_tcase = lab.paths[pathId]->case_ptr[max_index];
+	if (!check_if_stuck(lab, temp_tcase->x, temp_tcase->y)) {
+		split_path_from_tip(lab, pathId, max_index - 1);
+	}
+	else {
+		//carve path
+	}
+
+}
+
+//
+void quickSort_paths(vector<t_path*>& paths, int low, int high) {
+	if (low < high) {
+		// Use the last element's case_ptr size as pivot
+		int pivot = paths[high]->case_ptr.size();
+		int i = low - 1;
+
+		for (int j = low; j <= high - 1; j++) {
+			if (paths[j]->case_ptr.size() <= pivot) {
+				i++;
+				// Swap the pointers
+				t_path* temp = paths[i];
+				paths[i] = paths[j];
+				paths[j] = temp;
+			}
+		}
+		// Put pivot in its correct position
+		t_path* temp = paths[i + 1];
+		paths[i + 1] = paths[high];
+		paths[high] = temp;
+
+		int pi = i + 1;
+
+		// Recursively sort the two partitions
+		quickSort_paths(paths, low, pi - 1);
+		quickSort_paths(paths, pi + 1, high);
+	}
+}
+
+//
+void print_paths(t_lab& lab) {
+	int id = 0;
+	int pathSize = lab.paths.size();
+	for (int i = 0; i < pathSize; i++) {
+		id = lab.paths[i]->id;
+		printf("path id: %d\n", id);
+		int pathdepth = lab.paths[i]->case_ptr.size();
+		printf("Depth: %d\n", pathdepth);
+	}
+}
+
+//
+void carvePath(t_lab& lab, t_path* path, int pathid, int x, int y) {
+	int fails = 0;
+	if ((path->case_ptr.size() > 1) && lab.cases[x][y].isEntrance) return; // stop if you reach another entrance. fuck it.
+	path->case_ptr.push_back(&lab.cases[x][y]);
+	lab.cases[x][y].visited = true;
+	int sizeX = lab.cases.size();
+	int sizeY = lab.cases[x].size();
+	//draw_matrix(lab);
+	//print_path(*path);
+
+	while (fails < 12) {
+		int rand_direction = rand() % 4;
+
+		//North
+		if (rand_direction == 0 && ((y + 1) < sizeY) && lab.cases[x][(y + 1)].visited == false &&
+			lab.cases[x][(y + 1)].isEntrance == false) {
+
+			lab.cases[x][y].open_top = true;
+			carvePath(lab, path, pathid, x, y + 1);
+			return;
+		}
+		//East
+		else if (rand_direction == 1 && ((x + 1) < sizeX) && lab.cases[(x + 1)][y].visited == false &&
+			lab.cases[(x + 1)][y].isEntrance == false) {
+			lab.cases[x][y].open_right = true;
+			carvePath(lab, path, pathid, (x + 1), y);
+			return;
+		}
+		//South
+		else if (rand_direction == 2 && (y - 1 >= 0) && lab.cases[x][(y - 1)].visited == false &&
+			lab.cases[x][(y - 1)].isEntrance == false) {
+			lab.cases[x][y].open_bot = true;
+			carvePath(lab, path, pathid, x, (y - 1));
+			return;
+		}
+		//West
+		else if (rand_direction == 3 && (x - 1 >= 0) && lab.cases[(x - 1)][y].visited == false &&
+			lab.cases[(x - 1)][y].isEntrance == false) {
+			lab.cases[x][y].open_left = true;
+			carvePath(lab, path, pathid, (x - 1), y);
+			return;
+		}
+		else {
+			fails++;
+		}
+	}
+}
+
+//
 vector<t_case*> generate_entrances(t_lab& lab, int x, int y) {
 	vector<t_case*> entrancelist;
 
@@ -34,6 +155,7 @@ vector<t_case*> generate_entrances(t_lab& lab, int x, int y) {
 	return entrancelist;
 }
 
+//
 vector<t_room*> generate_rooms(t_lab& lab, int x, int y) {
 	
 	vector<t_room*> roomList;
@@ -66,3 +188,18 @@ vector<t_room*> generate_rooms(t_lab& lab, int x, int y) {
 	roomList.push_back(room);
 	return roomList;
 }
+
+//
+int path_counter() {
+	path_number++;
+	return path_number;
+}
+
+//
+void nth_pass(t_lab& lab) {
+	int nb_paths = lab.paths.size(); 
+	quickSort_paths(lab.paths, 0, nb_paths - 1);
+	print_paths(lab);
+	
+}
+
