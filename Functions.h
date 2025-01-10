@@ -10,6 +10,8 @@ vector<t_room*> generate_rooms(t_lab& lab, int x, int y);
 //
 int path_counter();
 
+t_path* createPath_ptr();
+
 void nth_pass(t_lab& lab);
 
 void carvePath(t_lab& lab, t_path* path, int pathid, int x, int y);

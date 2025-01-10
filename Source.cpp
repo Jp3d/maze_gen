@@ -160,16 +160,15 @@ void generate_labyrinth(RenderWindow& window) {
 
 	//initial go
 	for (int i = 0; i < entrance_size; i++) {
-		t_path* new_path = new t_path();
-		int pathid = path_counter();
-		new_path->id = pathid;
-		carvePath(lab, new_path, pathid, lab.entrances[i]->x, lab.entrances[i]->y);
+		t_path* new_path = createPath_ptr();
+		carvePath(lab, new_path, new_path->id, lab.entrances[i]->x, lab.entrances[i]->y);
 		lab.paths.push_back(new_path);
 	}
 
+	nth_pass(lab);
+	nth_pass(lab);
 	draw_labyrinth(lab, window);
 	draw_room(window, lab);
-	nth_pass(lab);
 	//draw_matrix(lab);
 	//print_paths(lab);
 	

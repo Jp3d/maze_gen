@@ -4,8 +4,13 @@
 using namespace std;
 
 int path_number = -1;
+vector<t_case> direction_options;
+static bool isInit = false;
 
-
+//
+void init_directionOptions_vector(){
+	direction_options.reserve(4);
+}
 
 //
 bool check_if_stuck(t_lab& lab, int x, int y) {
@@ -29,8 +34,8 @@ void split_path_from_tip(t_lab& lab, int pathId, int max_index) {
 	}
 	else {
 		//carve path
-	}
 
+	}
 }
 
 //
@@ -72,6 +77,14 @@ void print_paths(t_lab& lab) {
 		int pathdepth = lab.paths[i]->case_ptr.size();
 		printf("Depth: %d\n", pathdepth);
 	}
+}
+
+//
+t_path* createPath_ptr() {
+	t_path* new_path = new t_path();
+	int pathid = path_counter();
+	new_path->id = pathid;
+	return new_path;
 }
 
 //
@@ -120,6 +133,60 @@ void carvePath(t_lab& lab, t_path* path, int pathid, int x, int y) {
 		else {
 			fails++;
 		}
+	}
+}
+
+void carvePath_fromAvailable(t_lab& lab, t_path* path, int pathid, int x, int y) {
+	direction_options.clear();
+	
+	path->case_ptr.push_back(&lab.cases[x][y]);
+	lab.cases[x][y].visited = true;
+	int sizeX = lab.cases.size();
+	int sizeY = lab.cases[x].size();
+	int directions;
+	
+	switch (isInit) {
+	case(true):	break;
+	case(false): init_directionOptions_vector();
+	}
+
+	directions = 0;
+	int rand_direction = rand() % 4;
+	//check what directions are available and compile them into directionOptions
+	if ((y + 1) < sizeY && lab.cases[x][(y + 1)].visited == false && lab.cases[x][(y + 1)].isEntrance == false) {
+		direction_options.push_back(lab.cases[x][y + 1]);
+		directions++;
+	}
+	if ((x + 1) < sizeX && lab.cases[x + 1][y].visited == false && lab.cases[x + 1][y].isEntrance == false) {
+		direction_options.push_back(lab.cases[x + 1][y]);
+		directions++;
+	}
+	if ((y - 1) > 0 && lab.cases[x][y - 1].visited == false && lab.cases[x][y - 1].isEntrance == false) {
+		direction_options.push_back(lab.cases[x][y - 1]);
+		directions++;
+	}
+	if ((x - 1) > 0 && lab.cases[x - 1][y].visited == false && lab.cases[x - 1][y].isEntrance == false) {
+		direction_options.push_back(lab.cases[x - 1][y]);
+		directions++;
+	}
+		
+	if (directions > 0) {
+		rand_direction %= directions;
+		if (direction_options[rand_direction].y > y) {
+			lab.cases[x][y].open_top = true;
+		}
+		else if (direction_options[rand_direction].y < y) {
+			lab.cases[x][y].open_bot = true;
+		}
+		else if (direction_options[rand_direction].x > x) {
+			lab.cases[x][y].open_right = true;
+		}
+		else if (direction_options[rand_direction].x < x) {
+			lab.cases[x][y].open_left = true;
+		}
+
+
+		carvePath_fromAvailable(lab, path, pathid, direction_options[rand_direction].x, direction_options[rand_direction].y);
 	}
 }
 
@@ -197,9 +264,32 @@ int path_counter() {
 
 //
 void nth_pass(t_lab& lab) {
-	int nb_paths = lab.paths.size(); 
+	int o = 0; //iter for t_cases to check
+	int opening = 0; //boolean checking for opening
+	int nb_paths = lab.paths.size();
+	int local_path_size = 0;
+	int caseNum;
 	quickSort_paths(lab.paths, 0, nb_paths - 1);
-	print_paths(lab);
+	//study shortest paths to add them some extensions.
+	for (int i = 0; i < nb_paths; i++) {
+		local_path_size = lab.paths[i]->case_ptr.size();
+		o = 0;
+		opening = false;
+		while (!opening && o < local_path_size) {
+			caseNum = local_path_size - o - 1;
+			opening = check_if_stuck(lab, lab.paths[i]->case_ptr[caseNum]->x, lab.paths[i]->case_ptr[caseNum]->y);
+			o++;
+		}
+		if (opening) {
+			printf("found opening on path: %d", lab.paths[i]->id);
+			t_path* new_path = createPath_ptr();
+			carvePath_fromAvailable(lab, new_path, new_path->id, lab.paths[i]->case_ptr[caseNum]->x, lab.paths[i]->case_ptr[caseNum]->y);
+			lab.paths.push_back(new_path);
+		}
+	}
+
+
 	
+	print_paths(lab);
 }
 
