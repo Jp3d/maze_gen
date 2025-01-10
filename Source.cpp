@@ -166,7 +166,7 @@ void generate_labyrinth(RenderWindow& window) {
 	}
 
 	nth_pass(lab);
-	nth_pass(lab);
+	
 	draw_labyrinth(lab, window);
 	draw_room(window, lab);
 	//draw_matrix(lab);

@@ -93,6 +93,7 @@ void carvePath(t_lab& lab, t_path* path, int pathid, int x, int y) {
 	if ((path->case_ptr.size() > 1) && lab.cases[x][y].isEntrance) return; // stop if you reach another entrance. fuck it.
 	path->case_ptr.push_back(&lab.cases[x][y]);
 	lab.cases[x][y].visited = true;
+	lab.cases[x][y].depth++;
 	int sizeX = lab.cases.size();
 	int sizeY = lab.cases[x].size();
 	//draw_matrix(lab);

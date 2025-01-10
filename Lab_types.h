@@ -14,6 +14,7 @@ struct t_case {
 	bool isEntrance = false;
 	bool isRoom = false;
 	int path_id = -1;
+	int depth = 0;
 };
 
 struct t_path {
