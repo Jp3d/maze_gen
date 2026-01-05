@@ -12,8 +12,8 @@ using namespace sf;
 
 constexpr int windowWidth{ 800 }, windowHeight{ 600 };
 
-#define MAX_X 36
-#define MAX_Y 24
+#define MAX_X 40
+#define MAX_Y 28
 #define CELL 18
 
 void print_path(t_path path) {
@@ -51,6 +51,7 @@ void draw_matrix(t_lab& lab) {
 
 //
 void draw_labyrinth(t_lab& lab, RenderWindow& window) {
+	Color pathColor;
 	int x_cases = lab.cases.size();
 	int y_cases = lab.cases[0].size();
 	int halfcell = (CELL / 2);
@@ -64,6 +65,8 @@ void draw_labyrinth(t_lab& lab, RenderWindow& window) {
 		for (int y = 0; y < y_cases; y++) {
 			float xpos = (CELL * x) + pos_left;
 			float ypos = (CELL * y) + pos_bot;
+			size_t colorValue = lab.cases[x][y].depth % 255;
+			caserect.setFillColor(Color(colorValue,colorValue,colorValue));
 			if (lab.cases[x][y].visited) {
 				caserect.setPosition({ xpos , ypos });
 				window.draw(caserect);
@@ -131,8 +134,10 @@ void draw_room(RenderWindow& window, t_lab& lab) {
 
 //
 void generate_labyrinth(RenderWindow& window) {
+	int casesLeft;
 	srand(static_cast<unsigned int>(time(0)));
 	t_lab lab;
+	lab.sizeX = MAX_X, lab.sizeY = MAX_Y;
 
 	// First resize for Y rows (vertical)
 	lab.cases.resize(MAX_X);  // Changed to nb_cases_X
@@ -164,8 +169,16 @@ void generate_labyrinth(RenderWindow& window) {
 		carvePath(lab, new_path, new_path->id, lab.entrances[i]->x, lab.entrances[i]->y);
 		lab.paths.push_back(new_path);
 	}
-
-	nth_pass(lab);
+	casesLeft = countUnvisitedCells(lab, MAX_X - 1, MAX_Y - 1);
+	printf("Casesleft: %d\n", casesLeft);
+	while(casesLeft > 20){
+		printf("Casesleft: %d\n", casesLeft);
+		nth_pass(lab);
+		casesLeft = countUnvisitedCells(lab, MAX_X - 1, MAX_Y - 1);
+	}
+	processAllUnvisitedCells(lab);
+	update_allPathIDs(lab);
+	//print_all_cases_pathIDs(lab, MAX_X - 1, MAX_Y - 1);
 	
 	draw_labyrinth(lab, window);
 	draw_room(window, lab);
@@ -202,7 +215,7 @@ int main() {
 	posText.setStyle(Text::Bold);
 	posText.setFont(myFont);
 
-	RenderWindow window{ {windowWidth, windowHeight }, "CPP" };
+	RenderWindow window{ {windowWidth, windowHeight }, "mazegenCPP" };
 	window.setFramerateLimit(30);
 	window.setVerticalSyncEnabled(false);
 

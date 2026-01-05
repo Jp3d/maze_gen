@@ -4,8 +4,8 @@
 using namespace std;
 
 struct t_case {
-	int x;
-	int y;
+	int x{0};
+	int y{0};
 	bool open_right = false;
 	bool open_top = false;
 	bool open_bot = false;
@@ -18,7 +18,7 @@ struct t_case {
 };
 
 struct t_path {
-	vector<t_case*> case_ptr;              // pointer to the maze cell this path is at
+	vector<t_case*> case_ptr; // list of cell pointers of this path
 	int id; //stores an identifier for paths.
 	int max;
 
@@ -36,5 +36,7 @@ struct t_lab {
 	vector<t_case*> entrances;
 	vector<t_path*> paths;
 	vector<t_room*> rooms;
+	int sizeX{ 1 };
+	int sizeY{ 1 };
 
 };
